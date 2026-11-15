@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /login.html
+Disallow: /write.html
+Disallow: /myposts.html
+Sitemap: https://lawcompanion.techdom.app/sitemap.xml
