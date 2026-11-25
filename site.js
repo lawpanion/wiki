@@ -4,6 +4,7 @@ function $(i){return document.getElementById(i)}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function tok(){try{return localStorage.getItem('studentToken')||''}catch(e){return ''}}
 function setTok(t){try{if(t)localStorage.setItem('studentToken',t);else localStorage.removeItem('studentToken')}catch(e){}}
+(function(){var h=/(?:^#|&)t=([^&]+)/.exec(location.hash);if(h){try{setTok(decodeURIComponent(h[1]));history.replaceState(null,'',location.pathname+location.search)}catch(e){}}})();
 var tt;
 function toast(m,bad){var t=$('lcToast');if(!t){t=el('div','toast');t.id='lcToast';document.body.appendChild(t)}t.textContent=m;t.className='toast show'+(bad?' bad':'');clearTimeout(tt);tt=setTimeout(function(){t.className='toast'+(bad?' bad':'')},3600)}
 function call(path,method,body){
@@ -17,7 +18,7 @@ var base=(function(){var s=document.currentScript;return s&&s.src?s.src.replace(
 var MEP=null;function me(){return MEP||(MEP=call('/wiki/me','GET'))}
 (function acct(){
   if(!tok())return;var h=document.querySelector('header.top');if(!h)return;
-  me().then(function(j){if(!j||!j.ok||!j.profile)return;var d=el('div','acct');d.appendChild(el('b',null,j.profile.name||'Your account'));d.appendChild(document.createTextNode(' · '+(j.published||0)+(j.published===1?' post published':' posts published')));var ml=el('a',null,'My posts');ml.href=base+'myposts.html';ml.style.cssText='margin-left:12px;text-decoration:underline;color:var(--blue);font-weight:600';d.appendChild(ml);h.parentNode.insertBefore(d,h.nextSibling)})
+  me().then(function(j){if(j&&(j._s===401||j.login)){setTok('');var l=$('nvl');if(l){l.textContent='Login / Sign up';l.href=base+'login.html'}return}if(!j||!j.ok||!j.profile)return;var d=el('div','acct');d.appendChild(el('b',null,j.profile.name||'Your account'));d.appendChild(document.createTextNode(' · '+(j.published||0)+(j.published===1?' post published':' posts published')));var ml=el('a',null,'My posts');ml.href=base+'myposts.html';var dl=el('a',null,'Dashboard');dl.href=API+'/account#t='+encodeURIComponent(tok());dl.style.cssText='margin-left:12px;text-decoration:underline;color:var(--blue);font-weight:600';ml.style.cssText='margin-left:12px;text-decoration:underline;color:var(--blue);font-weight:600';d.appendChild(ml);d.appendChild(dl);h.parentNode.insertBefore(d,h.nextSibling)})
 })();
 document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-copy]'):null;if(!b)return;var u=b.getAttribute('data-copy');
   var ok=function(){toast('Link copied')};
@@ -26,7 +27,7 @@ document.addEventListener('click',function(e){var b=e.target.closest?e.target.cl
   var links=document.querySelectorAll('.nv a');
   for(var i=0;i<links.length;i++){if(links[i].getAttribute('data-p')===page)links[i].className='on'}
   var l=$('nvl');
-  if(l&&tok()){l.textContent='Log out';l.removeAttribute('href');l.style.cursor='pointer';l.onclick=function(e){e.preventDefault();call('/logout','POST').then(function(){});setTok('');try{localStorage.removeItem('lcDraft')}catch(x){}location.href=base+'login.html'}}
+  if(l&&tok()){l.textContent='My account';l.href=API+'/account#t='+encodeURIComponent(tok())}
 })();
 function nextOk(){var m=/[?&]next=([^&]+)/.exec(location.search),v=m?decodeURIComponent(m[1]):'';return v==='write.html'||v==='myposts.html'?v:''}
 document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-corr]'):null;if(!b)return;
@@ -55,16 +56,7 @@ if(page==='myposts'){
         ML.appendChild(c)})})}}
 }
 
-if(page==='login'){
-  var f=$('lf');if(!f)return;
-  if(tok()){info('You are logged in','Open the writing page to start a post.','Write',function(){location.href=base+'write.html'})}
-  f.onsubmit=function(e){e.preventDefault();var b=$('lb');b.disabled=true;b.textContent='Logging in...';
-    call('/login','POST',{email:$('le').value.trim(),password:$('lp').value}).then(function(j){
-      b.disabled=false;b.textContent='Log in';
-      if(!j.ok||!j.token){toast(j.error||'Could not log in.',true);return}
-      setTok(j.token);location.href=base+(nextOk()||'write.html')})};
-}
-
+if(page==='login'&&tok()){var li=$('lgIn'),lo=$('lgOut');if(li){li.hidden=false;if(lo)lo.hidden=true;$('lgd').href=API+'/account#t='+encodeURIComponent(tok())}}
 if(page==='write'){
   var G=$('wGate'),BI=$('wBio'),ED=$('wEd'),CL=$('wClosed');if(!G)return;
   var tags=[],closed=false;
