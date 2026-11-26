@@ -1,3 +1,19 @@
+function lcSearch(box,SITE,API){if(!box)return;var D=null,P=null;
+var PAGES=[['AI Tutor',SITE+'/ai-tutor.html'],['Courses',SITE+'/courses.html'],['Legislation',SITE+'/legislation.html'],['Decided Cases',SITE+'/decided-cases.html'],['Publications',SITE+'/publications.html'],['Write an article',SITE+'/write.html'],['About Law Companion',SITE+'/about.html'],['Login / Sign up',SITE+'/login.html'],['My dashboard',API+'/account'],['Plans and prices',API+'/subscribe'],['Search decided cases',API+'/screen/decided?web=1'],['Open the AI Tutor',API+'/screen/assistant?web=1']];
+var inp=document.createElement('input');inp.type='search';inp.placeholder='Search courses, statutes, cases, articles...';inp.setAttribute('aria-label','Search');inp.autocomplete='off';
+var res=document.createElement('div');res.className='sres';res.hidden=true;box.appendChild(inp);box.appendChild(res);
+function load(){if(P)return P;var out=[];P=Promise.all([fetch(API+'/catalog').then(function(r){return r.json()}).then(function(j){(j.notes||[]).forEach(function(p){if(p.link&&(p.category==='course'||p.category==='legislation'))out.push([p.category==='course'?'Courses':'Legislation',p.title,p.link])})}).catch(function(){}),fetch(SITE+'/posts.json').then(function(r){return r.json()}).then(function(L){(L||[]).forEach(function(a){out.push(['Articles',a.t,SITE+'/posts/'+a.s+'.html',(a.x||'')])})}).catch(function(){})]).then(function(){PAGES.forEach(function(p){out.push(['Pages',p[0],p[1]])});D=out});return P}
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function show(q){q=q.trim().toLowerCase();if(!q){res.hidden=true;return}var T=q.split(/\s+/);var hit=(D||[]).filter(function(x){var h=(x[1]+' '+(x[3]||'')).toLowerCase();return T.every(function(t){return h.indexOf(t)>=0})});
+hit.sort(function(a,b){return (b[1].toLowerCase().indexOf(q)===0)-(a[1].toLowerCase().indexOf(q)===0)});
+var order=['Courses','Legislation','Articles','Pages'],h='',n=0;order.forEach(function(g){var X=hit.filter(function(x){return x[0]===g}).slice(0,5);if(!X.length)return;h+='<h5>'+g+'</h5>'+X.map(function(x){n++;return '<a href="'+esc(x[2])+'">'+esc(x[1])+'</a>'}).join('')});
+if(!n)h='<div class="none">'+(D?'No results for "'+esc(q)+'".':'Searching...')+'</div>';h+='<a class="more" href="'+esc(API)+'/screen/decided?web=1">Search decided cases</a>';res.innerHTML=h;res.hidden=false}
+var t=null;inp.addEventListener('focus',function(){load().then(function(){show(inp.value)})});
+inp.addEventListener('input',function(){clearTimeout(t);load();t=setTimeout(function(){show(inp.value)},60)});
+inp.addEventListener('keydown',function(e){if(e.key==='Escape'){res.hidden=true;inp.blur()}if(e.key==='Enter'){var a=res.querySelector('a');if(a&&!res.hidden)location.href=a.href}});
+document.addEventListener('click',function(e){if(!box.contains(e.target))res.hidden=true});
+setTimeout(load,1200)}
+lcSearch(document.getElementById('lcs'),location.origin,'https://api.techdom.app');
 (function(){
 var API='https://api.techdom.app';
 function $(i){return document.getElementById(i)}
