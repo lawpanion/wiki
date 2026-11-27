@@ -14,9 +14,9 @@ inp.addEventListener('input',function(){clearTimeout(t);load();t=setTimeout(func
 inp.addEventListener('keydown',function(e){if(e.key==='Escape'){res.hidden=true;inp.blur()}if(e.key==='Enter'){var a=res.querySelector('a');if(a&&!res.hidden)location.href=a.href}});
 document.addEventListener('click',function(e){if(!box.contains(e.target))res.hidden=true});
 setTimeout(load,1200)}
-lcSearch(document.getElementById('lcs'),location.origin,'https://api.techdom.app');
+lcSearch(document.getElementById('lcs'),location.origin,'https://student.techdom.app');
 (function(){
-var API='https://api.techdom.app';
+var API='https://student.techdom.app';
 function $(i){return document.getElementById(i)}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function dom(){var h=location.hostname.split('.');return h.length>=3?'.'+h.slice(-2).join('.'):''}
